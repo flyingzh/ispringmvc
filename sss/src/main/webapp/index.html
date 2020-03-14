@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>简历管理</title>
+	</head>
+	<style type="text/css">
+		*{padding: 0;margin: 0;}
+		body{background-color: #DCF2FD;}
+		#resumeIndex{width: 100%;height: 100%;padding: 20px 0;}
+		.resumeAdd{width: 90%;margin: 0 auto;padding-bottom: 10px;height: 50px;}
+		.resumeAdd span{display: inline-block;width: 100px;height: 40px;line-height:40px;text-align: center;background-color: #3280F7;color: white;font-size: 24px;float: right;border-radius: 5px;}
+		.resumeTable{width: 90%;margin: 0 auto;border-color:#ccc;}
+		.resumeTable tr th,.resumeTable tr td{text-align: center;height: 30px;}
+		.resumeTable tr td input{width: 60px;height: 24px; text-align: center;outline: none;border-radius: 2px;cursor: pointer;background-color: #3280F7;color: #fff;border: 0;}
+		
+		.resumeTableDataUpdate-layer{padding: 20px 30px;}
+		.resumeTableDataUpdate-layer>div{margin-bottom: 10px;}
+		.resumeTableDataUpdate-layer .red-color{color: #dd0000;width: 80px;}
+		.resumeTableDataUpdate-layer input{height: 30px;width: 300px;text-indent: 5px;}
+		
+	</style>
+	
+<script src="js/jquery-1.12.4.min.js"></script>
+<script src="js/layer/layer.js"></script>
+
+	<body>
+		<div id="resumeIndex">
+			<div class="resumeAdd">
+				<span onclick="resumeTableListAdd(this)">新增</span>
+			</div>
+			<table class="resumeTable" cellpadding="0" cellspacing="0" border="1">
+				<thead>
+					<tr>
+						<th>编号</th>
+						<th>姓名</th>
+						<th>地址</th>
+						<th style="width:280px;">手机号</th>
+						<th style="width:200px;">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!--<tr>
+						<td>001</td>
+						<td>郑飞</td>
+						<td>大坝塘7组</td>
+						<td>18588429401</td>
+						<td>
+
+						</td>
+					</tr>-->
+				</tbody>
+			</table>
+		</div>
+		
+		
+	</body>
+</html>
+<script type="text/javascript">
+	function getTabListData(){
+		$.ajax({
+			type: "post",
+			url: '/resume/list',
+			data: null,
+			// contentType: 'application/json;charset=utf-8',
+			dataType: 'json',
+			success: function(dataArray) {
+				$(".resumeTable tbody").empty();
+				console.log(dataArray)
+				for(r in dataArray){
+					var str=JSON.stringify(dataArray[r]).replace(/"/g, '&quot;');
+					$(".resumeTable tbody").append(
+							'<tr>'+
+							'<td>'+dataArray[r].id+'</td>'+
+							'<td>'+dataArray[r].name+'</td>'+
+							'<td>'+dataArray[r].address+'</td>'+
+							'<td>'+dataArray[r].phone+'</td>'+
+							'<td>'+
+							'<input type="text" id="resumeUpdate" onclick="resumeTableDataUpdate(this,'+str+')" value="更新" readonly="readonly" style="margin-right: 20px;" />'+
+							'<input type="text" id="resumeDel" onclick="resumeTableDataDel(this,'+dataArray[r].id+')" value="删除" readonly="readonly" />'+
+							'</td>'+
+							'</tr>'
+					)
+				}
+			},error:function(xhr){
+				console.log(xhr)
+				if(xhr.responseText == 'login'){
+					window.location="login.html"
+				}else{
+					layer.msg('获取列表失败！', {icon: 2, time: 2000});
+				}
+			}
+		})
+	}
+	getTabListData();
+	//新增
+	function resumeTableListAdd(){
+		layer.open({
+			type: 1,
+			title: "新增",
+			closeBtn: false,
+			area: ['460px','280px'],
+			shade: 0.2,
+			id: 'LAY_resumeTableListAdd', //设定一个id，防止重复弹出
+			btn: ['取消', '确定'],
+			moveType: 1 ,//拖拽模式，0或者1
+			content: '<div class="resumeTableDataUpdate-layer">'+
+						'<div class="">'+
+							'<span class="red-color">姓&nbsp;&nbsp;&nbsp;名：</span>'+
+							'<input type="text" class="up_name">'+
+						'</div>'+
+						'<div class="">'+
+							'<span class="red-color">地&nbsp;&nbsp;&nbsp;址：</span>'+
+							'<input type="text" class="up_address">'+
+						'</div>'+
+						'<div class="">'+
+							'<span class="red-color">手机号：</span>'+
+							'<input type="text" class="up_phone" maxlength="11" onkeyup="value=value.replace(/[^0-9]*/g,\'\').replace(/\^/g,\'\')">'+
+						'</div>'+
+					'</div>',
+			btn2:function(index, layero){
+				var param={};
+					param.name=$(".resumeTableDataUpdate-layer input.up_name").val().trim();
+					param.address=$(".resumeTableDataUpdate-layer input.up_address").val().trim();
+					param.phone=$(".resumeTableDataUpdate-layer input.up_phone").val().trim();
+				if(param.name=='' || param.address=='' || param.phone==''){
+					layer.msg('红色字体项为必填项！', {icon: 2, time: 2000});
+					return false
+				}
+				$.ajax({
+					type: "post",
+					url: '/resume/add',
+					data: param,
+					// contentType: 'application/json;charset=utf-8',
+					dataType: 'json',
+					success: function(res) {
+						console.log(res);
+						layer.close(index);
+						getTabListData();
+					},error:function(xhr){
+						console.log(xhr)
+						if(xhr.responseText == 'login'){
+							window.location="login.html"
+						}else{
+							layer.msg('新增失败！', {icon: 2, time: 2000});
+						}
+
+					}
+				})
+
+				return false
+			},
+			success: function(layero) {
+				$(".resumeTableDataUpdate-layer input").val('');
+			}
+		})
+	}
+	// 更新
+	function resumeTableDataUpdate(e,data){
+		layer.open({
+			type: 1,
+			title: "更新",
+			closeBtn: false,
+			area: ['460px','280px'],
+			shade: 0.2,
+			id: 'LAY_resumeTableDataUpdate', //设定一个id，防止重复弹出
+			btn: ['取消', '确定'],
+			moveType: 1 ,//拖拽模式，0或者1
+			content: '<div class="resumeTableDataUpdate-layer">'+
+						'<div class="">'+
+							'<span class="red-color">姓&nbsp;&nbsp;&nbsp;名：</span>'+
+							'<input type="text" class="up_name">'+
+						'</div>'+
+						'<div class="">'+
+							'<span class="red-color">地&nbsp;&nbsp;&nbsp;址：</span>'+
+							'<input type="text" class="up_address">'+
+						'</div>'+
+						'<div class="">'+
+							'<span class="red-color">手机号：</span>'+
+							'<input type="text" class="up_phone" maxlength="11" onkeyup="value=value.replace(/[^0-9]*/g,\'\').replace(/\^/g,\'\')">'+
+						'</div>'+
+					'</div>',
+			btn2:function(index, layero){
+				var param={};
+					param.id=data.id;
+					param.name=$(".resumeTableDataUpdate-layer input.up_name").val().trim();
+					param.address=$(".resumeTableDataUpdate-layer input.up_address").val().trim();
+					param.phone=$(".resumeTableDataUpdate-layer input.up_phone").val().trim();
+				if(param.name=='' || param.address=='' || param.phone==''){
+					layer.msg('红色字体项为必填项！', {icon: 2, time: 2000});
+					return false
+				}
+				$.ajax({
+					type: "post",
+					url: '/resume/update',
+					data: param,
+					// contentType: 'application/json;charset=utf-8',
+					dataType: 'json',
+					success: function(res) {
+						console.log(res)
+						layer.close(index);
+						getTabListData();
+					},error:function(xhr){
+						console.log(xhr)
+						if(xhr.responseText == 'login'){
+							window.location="login.html"
+						}else{
+							layer.msg('更新失败！', {icon: 2, time: 2000});
+						}
+					}
+				})
+			},
+			success: function(layero) {
+				$(".resumeTableDataUpdate-layer input.up_name").val(data.name);
+				$(".resumeTableDataUpdate-layer input.up_address").val(data.address);
+				$(".resumeTableDataUpdate-layer input.up_phone").val(data.phone);
+			}
+		})
+		
+	}
+	// 删除
+	function resumeTableDataDel(e,id){
+		layer.open({
+			type: 1,
+			title: '提示',
+			area:['400px','auto'],
+			btnAlign: 'r',
+			content: '<p style="text-align: left;margin-left: 20px;margin-right:20px;min-width:300px;margin-bottom:0">确定删除该条数据？</p >',
+			btn: ['取消','确定'],
+			yes: function(index, layero){
+				layer.close(index)
+			},
+			btn2:function(index, layero){
+				$.ajax({
+					type: "post",
+					url: '/resume/delete/'+id,
+					// data: {'id':id},
+					// contentType: 'application/json;charset=utf-8',
+					dataType: 'json',
+					success: function(res) {
+						layer.close(index);
+						getTabListData();
+					},error:function(xhr){
+						console.log(xhr)
+						if(xhr.responseText == 'login'){
+							window.location="login.html"
+						}else{
+							layer.msg('删除失败！', {icon: 2, time: 2000});
+						}
+					}
+				})
+			},
+			closeBtn:0,
+			success:function(index, layero){
+				$(".layui-layer-title").css("padding-left","20px")
+			}
+		});
+	}
+
+</script>

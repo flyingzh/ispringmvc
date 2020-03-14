@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>简历管理</title>
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+ 
+  <style>
+  	body {background-color: #dcf2fd;height: 100%;width: 100%;overflow: auto;}
+	.login-cont{height: 220px;width: 420px;position: absolute;top: 50%;left:50%;margin-top: -110px;margin-left: -210px;text-align: center;}
+	.login-cont input{width: 375px;height: 50px;background: #eef4f7;border-radius: 40px;border: 1px solid #e0e6e8;text-indent: 50px;margin: 5px 0;outline: none;}
+	.login-cont input#submitBtn{text-indent: 0;font-size: 16px;text-align: center;cursor: pointer;}
+  </style>
+
+
+	<script src="js/jquery-1.12.4.min.js"></script>
+	<script src="js/layer/layer.js"></script>
+
+</head>
+
+<body>
+	<div class="login-main">
+		<form class="login-cont" action="/resume/login" method="post">
+			<input type="text" class="username" placeholder="请输入登录账号">
+			<input type="password" class="password" placeholder="请输入密码">
+			<input type="text" name="" id="submitBtn" value="登录" readonly="readonly" />
+		</form>
+			
+	</div>
+	
+
+<script>
+	$("#submitBtn").click(function(){
+		var username=$(".login-cont .username").val().trim();
+		var password=$(".login-cont .password").val().trim();
+		if(username==''||password==''){
+			layer.msg('账号或密码不能为空！', {icon: 2, time: 2000});
+			return false
+		}
+		$.ajax({
+			type: "post",
+			url: '/resume/login',
+			data: {'username':username,"password":password},
+			// contentType: 'application/json;charset=utf-8',
+			dataType: 'json',
+			success: function(res) {
+				console.log(res)
+				if(res.result == 'success'){
+					window.location="index.html";
+				}else{
+					layer.msg('登陆失败，账号或密码不正确！', {icon: 2, time: 2000});
+				}
+			},error:function(xhr){
+				layer.msg('登陆失败，账号或密码不正确！', {icon: 2, time: 2000});
+			}
+		})
+	})
+</script>
+</body>
+</html>
