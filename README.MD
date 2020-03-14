@@ -15,3 +15,8 @@ http://localhost:8080/demo/handle02?username=wangwu
 http://localhost:8080/demo/handle03?username=zhangsan
 
 其它username回复 “ERROR Permission denied”
+
+
+### 进行SSS整合（Spring+SpringMVC+SpringDataJPA）,登录验证使用SpringMVC拦截器实现
+
+http://localhost:8080
